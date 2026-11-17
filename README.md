@@ -159,10 +159,10 @@ Hours below are approximate. Fill them in.
 | Task | What it was | Hours |
 | --- | --- | --- |
 | Setup | Getting the machine ready | |
-| 1 | Clean the spreadsheet | |
-| 2 | Item list | |
-| 3 | Odoo screen | |
-| 4 | Reminder drafts | |
-| 5 | Security note | |
-| 6 | This guide and the demo start | |
-| Total | | |
+| 1 | Clean the spreadsheet |.5 hour|
+| 2 | Item list |1 |
+| 3 | Odoo screen | 1.5|
+| 4 | Reminder drafts | 1 |
+| 5 | Security note |.5 |
+| 6 | This guide and the demo start |.5 |
+| Total | 5 hour  |
