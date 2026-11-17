@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: bluepalm
+      POSTGRES_PASSWORD: bluepalm
+      POSTGRES_DB: bluepalm
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bluepalm -d bluepalm"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: task2_api/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      API_KEY: ${API_KEY:-dev-api-key-change-me}
+      DATABASE_URL: postgresql+psycopg://bluepalm:bluepalm@db:5432/bluepalm
+    depends_on:
+      db:
+        condition: service_healthy
