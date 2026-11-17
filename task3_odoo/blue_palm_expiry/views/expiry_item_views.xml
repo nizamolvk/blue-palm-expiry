@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_expiry_item_tree" model="ir.ui.view">
+        <field name="name">blue_palm.expiry.item.tree</field>
+        <field name="model">blue_palm.expiry.item</field>
+        <field name="arch" type="xml">
+            <tree decoration-danger="status == 'expired'" decoration-warning="status == 'expiring'">
+                <field name="name"/>
+                <field name="item_type"/>
+                <field name="company_id"/>
+                <field name="responsible_id"/>
+                <field name="expiry_date"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="annual_cost"/>
+                <field name="status"/>
+                <field name="external_ref"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_expiry_item_form" model="ir.ui.view">
+        <field name="name">blue_palm.expiry.item.form</field>
+        <field name="model">blue_palm.expiry.item</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="status" widget="statusbar" statusbar_visible="valid,expiring,expired,no_date"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="item_type"/>
+                            <field name="external_ref"/>
+                            <field name="expiry_date"/>
+                        </group>
+                        <group>
+                            <field name="company_id"/>
+                            <field name="responsible_id"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="annual_cost"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_expiry_item_search" model="ir.ui.view">
+        <field name="name">blue_palm.expiry.item.search</field>
+        <field name="model">blue_palm.expiry.item</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="external_ref"/>
+                <filter name="filter_expired" string="Expired" domain="[('status', '=', 'expired')]"/>
+                <filter name="filter_expiring" string="Expiring" domain="[('status', '=', 'expiring')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_company" string="Company" context="{'group_by': 'company_id'}"/>
+                    <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_expiry_item" model="ir.actions.act_window">
+        <field name="name">Expiry Items</field>
+        <field name="res_model">blue_palm.expiry.item</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_expiry_root" name="Expiry Tracker" sequence="50"/>
+    <menuitem id="menu_expiry_items" name="Expiry Items" parent="menu_expiry_root" action="action_expiry_item" sequence="10"/>
+</odoo>

@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_blue_palm_expiry_item_user,blue_palm.expiry.item.user,model_blue_palm_expiry_item,base.group_user,1,1,1,0
+access_blue_palm_expiry_item_manager,blue_palm.expiry.item.manager,model_blue_palm_expiry_item,group_expiry_manager,1,1,1,1
