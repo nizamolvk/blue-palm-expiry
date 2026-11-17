@@ -1,16 +1,18 @@
 from datetime import datetime, timedelta, timezone
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from task2_api.config import TODAY
 from task2_api.models import Item
 from task4_agent.audit import write_audit
 from task4_agent.llm import generate_draft
-from task4_agent.models import ReminderDraft
+from task4_agent.models import ReminderDraft, ensure_task4_schema
 from task4_agent.redact import redact
 
 
 def run(session: Session) -> None:
+    ensure_task4_schema(session.get_bind())
     end = TODAY + timedelta(days=30)
     items = (
         session.query(Item)
@@ -41,7 +43,7 @@ def run(session: Session) -> None:
             .filter(
                 ReminderDraft.item_id == item.id,
                 ReminderDraft.expiry_date == item.expiry_date,
-                ReminderDraft.status.in_(("pending_approval", "approved")),
+                ReminderDraft.status.in_(("pending_approval", "approved", "rejected")),
             )
             .first()
         )
@@ -61,13 +63,17 @@ def run(session: Session) -> None:
             branch=item.branch,
             expiry_date=item.expiry_date,
             to_email=email,
-            subject=generated["subject"],
-            body=generated["body"],
+            subject=redact(generated["subject"]),
+            body=redact(generated["body"]),
             status="pending_approval",
             created_at=datetime.now(timezone.utc),
         )
         session.add(draft)
-        session.flush()
+        try:
+            session.flush()
+        except IntegrityError:
+            session.rollback()
+            continue
         write_audit(
             session,
             item_id=item.id,

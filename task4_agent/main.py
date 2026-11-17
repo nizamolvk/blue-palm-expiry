@@ -6,19 +6,18 @@ from pydantic import BaseModel, ConfigDict, field_serializer, field_validator
 from sqlalchemy.orm import Session
 
 from task2_api.auth import require_api_key
-from task2_api.database import Base, make_engine, make_session_factory
+from task2_api.database import make_engine, make_session_factory
 from task4_agent.approve import DraftNotFound, NotPending, approve_draft, reject_draft
 from task4_agent.audit import format_utc
-from task4_agent.models import ReminderDraft
+from task4_agent.models import AuditLog, ReminderDraft, ensure_task4_schema
 
 PLACEHOLDER_KEY = "dev-api-key-change-me"
 DRAFT_STATUSES = {"pending_approval", "approved", "rejected"}
 BRANCHES = {"colombo": "Colombo", "dubai": "Dubai"}
 
 
-class DecisionIn(BaseModel):
+class ApproveIn(BaseModel):
     by: str
-    reject_reason: str | None = None
 
     @field_validator("by")
     @classmethod
@@ -27,6 +26,10 @@ class DecisionIn(BaseModel):
         if not name or name.casefold() == "string":
             raise ValueError("by must be a non-empty name")
         return name
+
+
+class RejectIn(ApproveIn):
+    reject_reason: str | None = None
 
     @field_validator("reject_reason")
     @classmethod
@@ -58,6 +61,24 @@ class DraftOut(BaseModel):
     def serialize_time(self, value: datetime | None) -> str | None:
         if value is None:
             return None
+        return format_utc(value)
+
+
+class ActivityOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    timestamp: datetime
+    item_id: int | None
+    item_ref: str | None
+    branch: str | None
+    draft_id: int | None
+    action: str
+    status: str
+    actor: str | None
+
+    @field_serializer("timestamp")
+    def serialize_time(self, value: datetime) -> str:
         return format_utc(value)
 
 
@@ -95,7 +116,7 @@ def _guard_production_keys() -> None:
 def create_app(engine=None) -> FastAPI:
     _guard_production_keys()
     engine = make_engine() if engine is None else engine
-    Base.metadata.create_all(engine)
+    ensure_task4_schema(engine)
     session_factory = make_session_factory(engine)
     app = FastAPI()
     app.state.session_factory = session_factory
@@ -125,8 +146,12 @@ def create_app(engine=None) -> FastAPI:
             query = query.filter(ReminderDraft.branch == branch)
         return query.order_by(ReminderDraft.id).all()
 
+    @reader.get("/activity", response_model=list[ActivityOut])
+    def list_activity(db: Session = Depends(get_db)):
+        return db.query(AuditLog).order_by(AuditLog.id).all()
+
     @manager.post("/drafts/{draft_id}/approve", response_model=DraftOut)
-    def approve(draft_id: int, body: DecisionIn, db: Session = Depends(get_db)):
+    def approve(draft_id: int, body: ApproveIn, db: Session = Depends(get_db)):
         try:
             return approve_draft(db, draft_id, body.by)
         except DraftNotFound:
@@ -135,7 +160,7 @@ def create_app(engine=None) -> FastAPI:
             raise HTTPException(status_code=409, detail="draft is not pending approval")
 
     @manager.post("/drafts/{draft_id}/reject", response_model=DraftOut)
-    def reject(draft_id: int, body: DecisionIn, db: Session = Depends(get_db)):
+    def reject(draft_id: int, body: RejectIn, db: Session = Depends(get_db)):
         try:
             return reject_draft(db, draft_id, body.by, body.reject_reason)
         except DraftNotFound:

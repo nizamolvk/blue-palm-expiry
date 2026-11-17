@@ -103,7 +103,7 @@ Three items have no date. They are left out of this table.
 - A cost of 0, and a negative cost, are kept and flagged for a person.
 - An exact duplicate row is removed. The same id with two different dates is kept as two rows.
 - Reminder text is a local template. No paid AI service is called.
-- If an item already has a pending or approved draft for the same expiry date, a second draft is not created.
+- If an item already has a pending, approved, or rejected draft for the same expiry date, a second draft is not created. The activity list is at `GET /activity`.
 - Nothing is sent.
 
 ## Five questions before a real system

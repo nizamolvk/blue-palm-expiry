@@ -32,6 +32,7 @@ def write_audit(
     draft_id: int | None,
     action: str,
     status: str,
+    actor: str | None = None,
 ) -> None:
     timestamp = datetime.now(timezone.utc)
     session.add(
@@ -43,6 +44,7 @@ def write_audit(
             draft_id=draft_id,
             action=action,
             status=status,
+            actor=actor,
         )
     )
     path = log_path()
@@ -51,9 +53,11 @@ def write_audit(
     ref_text = "-" if item_ref is None else item_ref
     branch_text = "-" if branch is None else branch
     draft_text = "-" if draft_id is None else str(draft_id)
+    actor_text = "-" if not actor else actor
     line = (
         f"{format_utc(timestamp)} item_id={item_text} item_ref={ref_text} "
-        f"branch={branch_text} draft_id={draft_text} action={action} status={status}\n"
+        f"branch={branch_text} draft_id={draft_text} action={action} status={status} "
+        f"actor={actor_text}\n"
     )
     with path.open("a", encoding="utf-8") as handle:
         handle.write(line)

@@ -64,6 +64,8 @@ def test_redact_removes_passport_phone_and_email() -> None:
     assert "+971501112233" not in cleaned
     assert "nimal.p@bluepalm.example" not in cleaned
     assert cleaned.count("[REDACTED]") == 3
+    spaced = redact("call +94 77 123 4567")
+    assert spaced == "call [REDACTED]"
 
 
 def test_only_items_within_30_days_get_drafts(client: TestClient) -> None:
@@ -164,6 +166,9 @@ def test_name_and_status_are_validated(client: TestClient) -> None:
         assert response.status_code == 422
     assert client.get("/drafts", params={"status": "expired"}, headers=HEADERS).status_code == 422
     assert client.get("/drafts", params={"branch": "Colmbo"}, headers=HEADERS).status_code == 422
+    schemas = client.get("/openapi.json").json()["components"]["schemas"]
+    assert set(schemas["ApproveIn"]["properties"]) == {"by"}
+    assert set(schemas["RejectIn"]["properties"]) == {"by", "reject_reason"}
 
 
 def test_branch_filter(client: TestClient) -> None:
@@ -236,6 +241,158 @@ def test_running_twice_creates_no_duplicates(client: TestClient) -> None:
         db.close()
     assert len(drafts) == 1
     assert drafts[0].status == "approved"
+
+
+def test_rejected_draft_blocks_another_draft(client: TestClient) -> None:
+    add_item(client)
+    db = session_of(client)
+    try:
+        run(db)
+        draft_id = db.query(ReminderDraft).one().id
+    finally:
+        db.close()
+    rejected = client.post(
+        f"/drafts/{draft_id}/reject",
+        json={"by": "Nizam", "reject_reason": "not now"},
+        headers=MANAGER_HEADERS,
+    )
+    assert rejected.status_code == 200
+    db = session_of(client)
+    try:
+        run(db)
+        drafts = db.query(ReminderDraft).all()
+    finally:
+        db.close()
+    assert len(drafts) == 1
+    assert drafts[0].id == draft_id
+    assert drafts[0].status == "rejected"
+
+
+def test_database_blocks_second_draft_for_same_expiry(client: TestClient) -> None:
+    from sqlalchemy.exc import IntegrityError
+
+    add_item(client)
+    db = session_of(client)
+    try:
+        run(db)
+        original = db.query(ReminderDraft).one()
+        db.add(
+            ReminderDraft(
+                item_id=original.item_id,
+                item_ref=original.item_ref,
+                branch=original.branch,
+                expiry_date=original.expiry_date,
+                to_email=original.to_email,
+                subject="second",
+                body="second",
+                status="rejected",
+                created_at=original.created_at,
+            )
+        )
+        with pytest.raises(IntegrityError):
+            db.commit()
+    finally:
+        db.rollback()
+        db.close()
+
+
+def test_generated_text_redacts_passport_and_spaced_phone(client: TestClient) -> None:
+    add_item(client, item_name="Permit P7730215 call +94 77 123 4567")
+    db = session_of(client)
+    try:
+        run(db)
+        draft = db.query(ReminderDraft).one()
+    finally:
+        db.close()
+    assert "P7730215" not in draft.subject
+    assert "P7730215" not in draft.body
+    assert "+94" not in draft.body
+    assert "123 4567" not in draft.body
+    assert "[REDACTED]" in draft.body
+
+
+def test_reject_is_manager_only_and_decisions_are_logged(client: TestClient, tmp_path) -> None:
+    approve_item = add_item(client, item_id="BP-A", source_row=1)
+    reject_item = add_item(client, item_id="BP-R", source_row=2)
+    db = session_of(client)
+    try:
+        run(db)
+        drafts = {row.item_id: row.id for row in db.query(ReminderDraft).all()}
+    finally:
+        db.close()
+    approve_id = drafts[approve_item]
+    reject_id = drafts[reject_item]
+
+    denied = client.post(
+        f"/drafts/{reject_id}/reject",
+        json={"by": "Nizam"},
+        headers=HEADERS,
+    )
+    assert denied.status_code == 401
+
+    approved = client.post(
+        f"/drafts/{approve_id}/approve",
+        json={"by": "Nizam"},
+        headers=MANAGER_HEADERS,
+    )
+    assert approved.status_code == 200
+    assert approved.json()["status"] == "approved"
+
+    rejected = client.post(
+        f"/drafts/{reject_id}/reject",
+        json={"by": "Nizam", "reject_reason": "not now"},
+        headers=MANAGER_HEADERS,
+    )
+    assert rejected.status_code == 200
+    assert rejected.json()["status"] == "rejected"
+
+    db = session_of(client)
+    try:
+        logs = db.query(AuditLog).all()
+        approved_draft = db.query(ReminderDraft).filter(ReminderDraft.id == approve_id).one()
+    finally:
+        db.close()
+    assert approved_draft.status == "approved"
+    actions = {row.action for row in logs}
+    assert actions == {"created", "approved", "rejected"}
+    assert "sent" not in actions
+    for row in logs:
+        assert row.timestamp is not None
+        assert row.draft_id is not None
+        assert row.status in {"pending_approval", "approved", "rejected"}
+        assert row.item_id in {approve_item, reject_item}
+    assert {row.item_id for row in logs if row.action == "created"} == {approve_item, reject_item}
+    assert {row.actor for row in logs if row.action == "created"} == {None}
+    approved_log = next(row for row in logs if row.action == "approved")
+    rejected_log = next(row for row in logs if row.action == "rejected")
+    assert approved_log.item_id == approve_item
+    assert approved_log.draft_id == approve_id
+    assert approved_log.status == "approved"
+    assert approved_log.actor == "Nizam"
+    assert rejected_log.item_id == reject_item
+    assert rejected_log.draft_id == reject_id
+    assert rejected_log.status == "rejected"
+    assert rejected_log.actor == "Nizam"
+
+    denied_history = client.get("/activity")
+    assert denied_history.status_code == 401
+    history = client.get("/activity", headers=HEADERS)
+    assert history.status_code == 200
+    payload = history.json()
+    assert {row["action"] for row in payload} == {"created", "approved", "rejected"}
+    approved_body = next(row for row in payload if row["action"] == "approved")
+    rejected_body = next(row for row in payload if row["action"] == "rejected")
+    assert approved_body["actor"] == "Nizam"
+    assert approved_body["draft_id"] == approve_id
+    assert approved_body["item_id"] == approve_item
+    assert approved_body["status"] == "approved"
+    assert approved_body["timestamp"].endswith("Z")
+    assert rejected_body["actor"] == "Nizam"
+    assert rejected_body["draft_id"] == reject_id
+    assert "nimal.p@bluepalm.example" not in history.text
+    text = (tmp_path / "agent.log").read_text(encoding="utf-8")
+    assert "actor=Nizam" in text
+    assert "nimal.p@bluepalm.example" not in text
 
 
 def test_production_rejects_placeholder_key(monkeypatch) -> None:

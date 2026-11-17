@@ -3,9 +3,9 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
-from task2_api.database import Base, make_engine, make_session_factory
+from task2_api.database import make_engine, make_session_factory
 from task4_agent.audit import write_audit
-from task4_agent.models import ReminderDraft
+from task4_agent.models import ReminderDraft, ensure_task4_schema
 
 
 class DraftNotFound(Exception):
@@ -25,7 +25,7 @@ def _pending(session: Session, draft_id: int) -> ReminderDraft:
     return draft
 
 
-def _decide(session: Session, draft: ReminderDraft, action: str, status: str) -> ReminderDraft:
+def _decide(session: Session, draft: ReminderDraft, action: str, status: str, by: str) -> ReminderDraft:
     write_audit(
         session,
         item_id=draft.item_id,
@@ -34,6 +34,7 @@ def _decide(session: Session, draft: ReminderDraft, action: str, status: str) ->
         draft_id=draft.id,
         action=action,
         status=status,
+        actor=by,
     )
     session.commit()
     session.refresh(draft)
@@ -48,7 +49,7 @@ def approve_draft(session: Session, draft_id: int, by: str) -> ReminderDraft:
     draft.decided_by = by
     draft.decided_at = datetime.now(timezone.utc)
     draft.reject_reason = None
-    return _decide(session, draft, "approved", "approved")
+    return _decide(session, draft, "approved", "approved", by)
 
 
 def reject_draft(
@@ -63,7 +64,7 @@ def reject_draft(
     draft.decided_by = by
     draft.decided_at = datetime.now(timezone.utc)
     draft.reject_reason = reject_reason
-    return _decide(session, draft, "rejected", "rejected")
+    return _decide(session, draft, "rejected", "rejected", by)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -72,7 +73,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--by", required=True)
     args = parser.parse_args(argv)
     engine = make_engine()
-    Base.metadata.create_all(engine)
+    ensure_task4_schema(engine)
     session = make_session_factory(engine)()
     try:
         approve_draft(session, args.id, args.by)

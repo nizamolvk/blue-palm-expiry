@@ -12,7 +12,7 @@ This repo cleans an expiry spreadsheet, serves a read API, drafts reminders for 
 
 [Done] `task2_api/config.py` reads `DATABASE_URL`. If unset, the API uses SQLite.
 
-[Done] The prompt is only type, name, expiry date, and days left (`task4_agent/reminder_agent.py`). A passport, a `+` phone number, and an email are stripped first (`task4_agent/redact.py`). The log stores item reference, branch, draft id, action, and status, not email or notes (`task4_agent/audit.py`).
+[Done] The prompt is only type, name, expiry date, and days left (`task4_agent/reminder_agent.py`). A passport, a phone number, and an email are stripped first (`task4_agent/redact.py`). The log stores item reference, branch, draft id, action, status, and the person who approved or rejected, not email or notes (`task4_agent/audit.py`). `GET /activity` returns that history.
 
 [Planned] Secrets manager, rotation every 90 days or when someone leaves, and one key per person. `docker-compose.yml` still has the demo database password.
 
