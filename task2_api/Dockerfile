@@ -6,8 +6,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY task2_api ./task2_api
+COPY task4_agent ./task4_agent
 COPY clean_items.csv ./clean_items.csv
+COPY task2_api/docker-start.sh /docker-start.sh
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python -m task2_api.load_data && uvicorn task2_api.main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "/docker-start.sh"]

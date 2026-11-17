@@ -19,6 +19,8 @@ services:
       - "8000:8000"
     environment:
       API_KEY: ${API_KEY:-dev-api-key-change-me}
+      MANAGER_API_KEY: ${MANAGER_API_KEY:-manager-key-change-me}
+      APP_ENV: ${APP_ENV:-development}
       DATABASE_URL: postgresql+psycopg://bluepalm:bluepalm@db:5432/bluepalm
     depends_on:
       db:
