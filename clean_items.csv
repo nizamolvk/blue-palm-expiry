@@ -1,0 +1,54 @@
+item_id,branch,item_type,item_name,responsible_email,expiry_date,annual_cost_usd,notes,source_row,needs_review,review_reason
+BP-1031,Dubai,Staff work permit,Staff work permit Dubai #32,priya.s@bluepalm.example,2027-02-01,850,,2,no,
+BP-1024,Colombo,Trade licence,Trade licence Colombo #25,nimal.p@bluepalm.example,2026-12-15,1700,,3,no,
+BP-1011,Dubai,Fire safety certificate,Fire safety certificate Dubai #12,priya.s@bluepalm.example,2027-01-30,450,,4,no,
+BP-1022,Colombo,Office lease,Office lease Colombo #23,nimal.p@bluepalm.example,2026-12-06,12100,,5,no,
+BP-1048,Colombo,Trade licence,Trade licence Colombo #49,nimal.p@bluepalm.example,2027-01-05,1650,,6,no,
+BP-1029,Dubai,Equipment warranty,Equipment warranty Dubai #30,priya.s@bluepalm.example,2027-01-07,200,,7,no,
+BP-1000,Colombo,Trade licence,Trade licence Colombo #1,nimal.p@bluepalm.example,2026-11-11,1500,,8,no,
+BP-1036,Colombo,Software subscription,Software subscription Colombo #37,nimal.p@bluepalm.example,2027-06-21,950,,9,no,
+BP-1046,Colombo,Office lease,Office lease Colombo #47,nimal.p@bluepalm.example,2026-12-30,12050,,10,no,
+BP-1021,Dubai,Equipment warranty,Equipment warranty Dubai #22,priya.s@bluepalm.example,2026-11-28,50,,11,no,
+BP-1042,Colombo,Insurance policy,Insurance policy Colombo #43,nimal.p@bluepalm.example,2026-12-08,2300,,12,no,
+BP-1010,Colombo,Insurance policy,Insurance policy Colombo #11,nimal.p@bluepalm.example,,2200,,13,yes,expiry date is blank
+BP-1008,Colombo,Trade licence,Trade licence Colombo #9,nimal.p@bluepalm.example,2027-01-01,1650,,14,no,
+BP-1016,Colombo,Trade licence,Trade licence Colombo #17,nimal.p@bluepalm.example,2027-06-19,1550,,15,no,
+BP-1017,Dubai,Vehicle registration,Vehicle registration Dubai #18,priya.s@bluepalm.example,2027-07-29,400,,16,no,
+BP-1033,Dubai,Vehicle registration,Vehicle registration Dubai #34,,2027-03-03,450,,17,yes,email `omar.k bluepalm.example` has a space where `@` would be. A likely address is `omar.k@bluepalm.example`. The clean file leaves the email empty
+BP-1019,Colombo,Fire safety certificate,Fire safety certificate Dubai #20,priya.s@bluepalm.example,2027-12-01,600,,18,yes,"branch was standardised to `Colombo`, but the item name says Dubai, and this email belongs to Dubai on the other consistent rows. The branch was not switched"
+BP-1043,Dubai,Fire safety certificate,Fire safety certificate Dubai #44,priya.s@bluepalm.example,2026-12-12,550,,19,no,
+BP-1026,Colombo,Insurance policy,Insurance policy Colombo #27,nimal.p@bluepalm.example,2026-12-28,2250,,20,no,
+BP-1038,Colombo,Office lease,Office lease Colombo #39,nimal.p@bluepalm.example,2027-09-29,12150,,21,no,
+BP-1047,Dubai,Staff work permit,Staff work permit Dubai #48,priya.s@bluepalm.example,2027-01-03,900,,23,no,
+BP-1044,Colombo,Software subscription,Software subscription Colombo #45,nimal.p@bluepalm.example,2026-12-17,1100,,24,no,
+BP-1049,Dubai,Vehicle registration,Vehicle registration Dubai #50,priya.s@bluepalm.example,2027-01-09,500,,25,no,
+BP-1012,Colombo,Software subscription,Software subscription Colombo #13,nimal.p@bluepalm.example,2027-02-14,-450,,26,yes,annual cost is `-450`
+BP-1039,Dubai,Staff work permit,Staff work permit Dubai #40,priya.s@bluepalm.example,2027-12-03,1000,"Employee [REDACTED], call [REDACTED] before renewal",27,no,
+BP-1028,Colombo,Software subscription,Software subscription Colombo #29,nimal.p@bluepalm.example,2027-01-03,1050,,28,no,
+BP-1001,Dubai,Vehicle registration,Vehicle registration Dubai #2,priya.s@bluepalm.example,2026-11-26,350,,29,no,
+BP-1018,Colombo,Insurance policy,Insurance policy Colombo #19,nimal.p@bluepalm.example,2027-09-27,2350,,30,no,
+BP-1030,Dubai,Office lease,Office lease Colombo #31,nimal.p@bluepalm.example,2027-01-17,12000,,31,yes,"branch was standardised to `Dubai`, but the item name says Colombo, and this email belongs to Colombo on the other consistent rows. The branch was not switched"
+BP-1020,Colombo,Software subscription,Software subscription Colombo #21,nimal.p@bluepalm.example,2027-11-13,900,Renewed early?,32,yes,"same item id appears with different values, and both rows were kept"
+BP-1014,Colombo,Office lease,Office lease Colombo #15,,2027-03-31,12200,,33,yes,"email `shanika.r@bluepalm` has no domain suffix. `.example` was not added, and the email was cleared"
+BP-1007,Dubai,Staff work permit,Staff work permit Dubai #8,priya.s@bluepalm.example,2026-12-30,900,Renewal needs copy of [REDACTED] for the manager,34,no,
+BP-1045,Dubai,Equipment warranty,Equipment warranty Dubai #46,priya.s@bluepalm.example,2026-12-23,0,,35,yes,annual cost is `0` (free versus missing is unclear)
+BP-1040,Colombo,Trade licence,Trade licence Colombo #41,nimal.p@bluepalm.example,2026-11-15,1500,,36,no,
+BP-1035,Dubai,Fire safety certificate,Fire safety certificate Dubai #36,priya.s@bluepalm.example,2027-05-02,400,,37,no,
+BP-1004,Colombo,Software subscription,Software subscription Colombo #5,nimal.p@bluepalm.example,2026-12-13,1100,,38,no,
+BP-1015,Dubai,Staff work permit,Staff work permit Dubai #16,priya.s@bluepalm.example,2027-04-30,800,,39,no,
+BP-1050,Colombo,Insurance policy,Insurance policy Colombo #51,nimal.p@bluepalm.example,2027-01-19,2200,,40,no,
+BP-1027,Dubai,Fire safety certificate,Fire safety certificate Dubai #28,priya.s@bluepalm.example,,500,,42,yes,"expiry date `TBC` is not a date, so it was cleared"
+BP-1005,Colombo,Equipment warranty,Equipment warranty Dubai #6,priya.s@bluepalm.example,2026-12-19,0,,43,yes,"branch was standardised to `Colombo`, but the item name says Dubai, and this email belongs to Dubai on the other consistent rows. The branch was not switched; annual cost is `0` (free versus missing is unclear)"
+BP-1002,Colombo,Insurance policy,Insurance policy Colombo #3,nimal.p@bluepalm.example,2026-12-04,2300,,44,no,
+BP-1013,Dubai,Equipment warranty,Equipment warranty Dubai #14,priya.s@bluepalm.example,2027-03-01,150,,45,no,
+BP-1032,Colombo,Trade licence,Trade licence Colombo #33,nimal.p@bluepalm.example,2027-02-16,1600,,46,no,
+BP-1051,Dubai,Fire safety certificate,Fire safety certificate Dubai #52,priya.s@bluepalm.example,2027-02-03,450,,47,no,
+BP-1037,Dubai,Equipment warranty,Equipment warranty Dubai #38,priya.s@bluepalm.example,2027-07-31,100,,48,no,
+BP-1023,Dubai,Staff work permit,Staff work permit Dubai #24,priya.s@bluepalm.example,2026-12-10,950,,49,no,
+BP-1006,Colombo,Office lease,Office lease Colombo #7,nimal.p@bluepalm.example,2026-12-26,12050,,50,no,
+BP-1034,Colombo,Insurance policy,Insurance policy Colombo #35,nimal.p@bluepalm.example,2027-04-02,2400,,51,no,
+BP-1003,Dubai,Fire safety certificate,Fire safety certificate Dubai #4,priya.s@bluepalm.example,,550,,53,yes,"`08/12/2026` could be day/month/year or month/day/year, so it was cleared"
+BP-1041,Dubai,Vehicle registration,Vehicle registration Dubai #42,priya.s@bluepalm.example,2026-11-30,350,,54,no,
+BP-1025,Dubai,Vehicle registration,Vehicle registration Dubai #26,priya.s@bluepalm.example,2026-12-21,300,,55,no,
+BP-1009,Dubai,Vehicle registration,Vehicle registration Dubai #10,priya.s@bluepalm.example,2027-01-05,500,,56,no,
+BP-1020,Colombo,Software subscription,Software subscription Colombo #21,nimal.p@bluepalm.example,2026-11-13,900,,57,yes,"same item id appears with different values, and both rows were kept"
